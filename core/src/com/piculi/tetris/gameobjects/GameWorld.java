@@ -11,6 +11,7 @@ import java.util.List;
 import static com.piculi.tetris.constants.GameConstants.BLOCK_SIZE;
 import static com.piculi.tetris.constants.GameConstants.TOTAL_BLOCKS_X;
 import static com.piculi.tetris.constants.GameConstants.TOTAL_BLOCKS_Y;
+import static com.piculi.tetris.constants.GameConstants.X_MARGIN;
 
 public class GameWorld {
     ShapeRenderer shapeRenderer;
@@ -29,12 +30,16 @@ public class GameWorld {
         clearBoard();
         for (Figure figure : figures) {
             figure.update();
-            //insertFigureIntoGameBoard(figure);
+           // insertFigureIntoGameBoard(figure);
         }
         for (Line line : lines) {
             line.update();
-            //insertLineIntoGameBoard(line);
+           // insertLineIntoGameBoard(line);
         }
+        if (figures.get(figures.size()-1).isAtBottom){
+            spawnFigure();
+        }
+       // figures.stream().filter(figure -> figure.isAtBottom).forEach(this::insertFigureIntoGameBoard);
     }
     public void draw(){
         ScreenUtils.clear(Color.GRAY);
@@ -54,16 +59,13 @@ public class GameWorld {
         lines.add(new Line(50, 0));
     }
     private void insertFigureIntoGameBoard(Figure figure){
-        int x = getDescreteX(figure.x);
-        int y = getDescreteY(figure.y);
-        boolean[][] shape = figure.shape;
-        for (int i = 0; i < shape.length; i++) {
-            for (int j = 0; j < shape[i].length; j++) {
-                if (shape[i][j]) {
-                    gameBoard[x + i][y + j] = true;
-                }
-            }
-        }
+       for(int i = 0; i<figure.shape.length; i++){
+           for(int j = 0; j<figure.shape[i].length; j++){
+               if(figure.shape[i][j]){
+                   gameBoard[getDescreteX(figure.x)+i][getDescreteY(figure.y)-j] = true;
+               }
+           }
+       }
 
     }
     private void insertLineIntoGameBoard(Line line){
@@ -77,7 +79,7 @@ public class GameWorld {
         }
     }
     private int getDescreteX(int x){
-        return x-100/TOTAL_BLOCKS_X;
+        return ((x+X_MARGIN)/TOTAL_BLOCKS_X)-1;
     }
     private int getDescreteY(int y){
         return y/TOTAL_BLOCKS_Y;
