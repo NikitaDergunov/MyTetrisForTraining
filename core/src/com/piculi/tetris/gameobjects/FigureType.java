@@ -1,7 +1,7 @@
 package com.piculi.tetris.gameobjects;
 
 public enum FigureType {
-    LINE(new boolean[][]{
+    I(new boolean[][]{
             {false, false, false, false},
             {false, false, false, false},
             {false, false, false, false},
@@ -37,5 +37,8 @@ public enum FigureType {
     }
     public boolean[][] getShape() {
         return shape;
+    }
+    public static FigureType getRandom() {
+        return values()[(int) (Math.random() * values().length)];
     }
 }

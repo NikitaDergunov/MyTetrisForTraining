@@ -9,20 +9,24 @@ import com.badlogic.gdx.utils.Array;
 
 import java.util.Arrays;
 
+import static com.piculi.tetris.constants.GameConstants.BLOCK_SIZE;
+import static com.piculi.tetris.constants.GameConstants.SCREEN_WIDTH;
+
 public class Figure {
-    private static final int normalSpeed = 1;
-    private static final int fastSpeed = 2;
-    private static final int blockSize = 16;
-    private boolean[][] shape = new boolean[4][4];
+    private static final int normalSpeed = 2;
+    private static final int fastSpeed = normalSpeed*2;
+    private static final int blockSize = BLOCK_SIZE;
+    public boolean[][] shape = new boolean[4][4];
     private Rectangle[][] blocks = new Rectangle[4][4];
     private int xSpeed;
     private int ySpeed;
-    private int x;
-    private int y;
+    public int x;
+    public int y;
     private Color color;
     private FigureType figureType;
 
     public Figure(FigureType figureType, int x, int y, Color color) {
+        this.figureType = figureType;
         fillShapeArray(figureType);
         createBlocks();
         this.xSpeed = normalSpeed;
@@ -32,18 +36,19 @@ public class Figure {
         this.color = color;
     }
     public void update(){
-        if(Gdx.input.isKeyPressed(Input.Keys.LEFT)){
-            if(x<=0){
-                x=0;
+        if(Gdx.input.isKeyJustPressed(Input.Keys.LEFT)){
+            if(x<=50){
+                x=50;
             }else {
-                x -= xSpeed;
+                x -= BLOCK_SIZE;
             }
         }
-        if(Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
-            if (x >= 300 - 4 * blockSize){
-                x = 300 - 4 * blockSize;
+        if(Gdx.input.isKeyJustPressed(Input.Keys.RIGHT)){
+            int margin = figureType.equals(FigureType.I) ? 4 : 3;
+            if (x >= SCREEN_WIDTH - margin * blockSize){
+                x = SCREEN_WIDTH - margin* blockSize;
             }else {
-            x += xSpeed;
+            x += BLOCK_SIZE;
             }
         }
         if(Gdx.input.isKeyPressed(Input.Keys.DOWN)){
@@ -53,7 +58,7 @@ public class Figure {
             rotate();
         }
         if(y<=0){
-            y=0;
+            y=800;
         }else {
             y-=normalSpeed;
         }

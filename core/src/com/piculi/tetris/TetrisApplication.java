@@ -9,35 +9,27 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.piculi.tetris.gameobjects.Figure;
 import com.piculi.tetris.gameobjects.FigureType;
+import com.piculi.tetris.gameobjects.GameWorld;
+import com.piculi.tetris.gameobjects.Line;
+
+import static com.piculi.tetris.constants.GameConstants.BLOCK_SIZE;
 
 public class TetrisApplication extends ApplicationAdapter {
-	ShapeRenderer shapeRenderer;
-	OrthographicCamera camera;
-	Figure figure;
+	GameWorld gameWorld;
 	
 	@Override
 	public void create () {
-		camera = new OrthographicCamera();
-		shapeRenderer = new ShapeRenderer();
-		shapeRenderer.setAutoShapeType(true);
-		figure = new Figure(FigureType.T, 300, 300, Color.WHITE);
+		gameWorld = new GameWorld();
 	}
 
 	@Override
 	public void render () {
-		// clear the screen with a dark blue color. The
-		// arguments to clear are the red, green
-		// blue and alpha component in the range [0,1]
-		// of the color to be used to clear the screen.
-		ScreenUtils.clear(0, 0, 0.2f, 1);
-		camera.update();
-		//shapeRenderer.setProjectionMatrix(camera.combined);
-		figure.update();
-		figure.draw(shapeRenderer);
+		gameWorld.update();
+		gameWorld.draw();
 	}
 	
 	@Override
 	public void dispose () {
-		shapeRenderer.dispose();
+		gameWorld.dispose();
 	}
 }
