@@ -5,7 +5,6 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.utils.Array;
 import com.piculi.tetris.FigureLinifyer;
 
 import java.util.Arrays;
@@ -32,6 +31,7 @@ public class Figure {
     //test
     public boolean isAtBottom = false;
     private boolean[][] gameBoard;
+    private int level = 1;
 
     public Figure(FigureType figureType, int x, int y, Color color, boolean[][] gameBoard) {
         this.gameBoard = gameBoard;
@@ -44,18 +44,18 @@ public class Figure {
         this.x = x;
         this.y = y;
         this.color = color;
-        //GOVNOCODE:
-        rotate();
-        rotate();
     }
-    public void update(){
+    public void update(int level){
+        this.level = level;
         if(isAtBottom) return;
         if(Gdx.input.isKeyJustPressed(Input.Keys.LEFT)){
-
-                x -= BLOCK_SIZE;
+            x -= BLOCK_SIZE;
             if(x<=X_MARGIN-1) {
                 x = X_MARGIN;
             }
+            //if (FigureLinifyer.isTouchingLeft(this, gameBoard)){
+            //    x += BLOCK_SIZE;
+            //}
         }
         if(Gdx.input.isKeyJustPressed(Input.Keys.RIGHT)){
             if(getYofTherightmostBlock()+BLOCK_SIZE>=SCREEN_WIDTH-X_MARGIN){
@@ -64,6 +64,9 @@ public class Figure {
             }else {
             x += BLOCK_SIZE;
             }
+            //if (FigureLinifyer.isTouchingRight(this, gameBoard)){
+            //    x -= BLOCK_SIZE;
+            //}
         }
         if(Gdx.input.isKeyPressed(Input.Keys.DOWN)){
             y -= BLOCK_SIZE;
@@ -72,7 +75,7 @@ public class Figure {
             rotate();
             moveFigureBackInBoundsAfterRotation();
         }
-            y-=normalSpeed;
+            y-=normalSpeed + level;
     }
 
     public void draw(ShapeRenderer shapeRenderer){
@@ -81,7 +84,7 @@ public class Figure {
             List<FigureLinifyer.Coordinates> shapeBlockCoordinates = FigureLinifyer.getCoordinatesForTouch(this, x, y);
             shapeBlockCoordinates.forEach(c->{
                 Color color2;
-                if (FigureLinifyer.isTouchingForCoordinates(c, gameBoard)){
+                if (FigureLinifyer.isTouchingForCoordinatesDown(c, gameBoard)){
                     color2 = Color.RED;
                 }else {
                     color2 = Color.GREEN;
@@ -98,13 +101,17 @@ public class Figure {
                 blocks[i][j].setY(y + j * blockSize);
                 int widthOfBlock;
                 int heightOfBlock;
+                if(TEST_MODE) {
+                    widthOfBlock = 1;
+                    heightOfBlock = 1;
+                }else
                 if(shape[i][j]){
                     widthOfBlock = blockSize;
                     heightOfBlock = blockSize;
 
-                }else if(TEST_MODE) {
-                    widthOfBlock = 1;
-                    heightOfBlock = 1;
+                }else {
+                    widthOfBlock = 0;
+                    heightOfBlock = 0;
                 }
                 shapeRenderer.rect(blocks[i][j].getX(), blocks[i][j].getY(), widthOfBlock, heightOfBlock);
             }

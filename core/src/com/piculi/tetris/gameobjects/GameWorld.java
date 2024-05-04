@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.piculi.tetris.constants.GameConstants.BLOCK_SIZE;
+import static com.piculi.tetris.constants.GameConstants.SCREEN_WIDTH;
+import static com.piculi.tetris.constants.GameConstants.TEST_MODE;
 import static com.piculi.tetris.constants.GameConstants.TOTAL_BLOCKS_X;
 import static com.piculi.tetris.constants.GameConstants.TOTAL_BLOCKS_Y;
 
@@ -23,12 +25,15 @@ public class GameWorld {
     SpriteBatch spriteBatch;
     ShapeRenderer shapeRenderer;
     OrthographicCamera camera;
-    private boolean[][] gameBoard = new boolean[TOTAL_BLOCKS_X][TOTAL_BLOCKS_Y];
+    private boolean[][] gameBoard = new boolean[TOTAL_BLOCKS_Y][TOTAL_BLOCKS_Y];
     private Figure activeFigure;
     private Score score;
     TetrisAchived tetrisAchived;
     Sound lineClearSound;
     Music backgroundMusic;
+    FigureType nextFigure;
+    UpNext upNext;
+    int level = 1;
     List<Figure> figures = new ArrayList<>();
     List<Line> lines = new ArrayList<>();
     public GameWorld(){
@@ -42,15 +47,27 @@ public class GameWorld {
         shapeRenderer.setAutoShapeType(true);
         this.score = new Score(10,700,Color.BLACK);
         this.tetrisAchived = new TetrisAchived(150, 600, Color.PURPLE);
+        nextFigure = FigureType.getRandom();
+        this.upNext = new UpNext(320, 650, nextFigure);
         spawnFigure();
     }
-
     public void update() {
+        level = score.getLevel();
         removeCompleteLinesAndShiftDown();
-        activeFigure.update();
-        activeFigure.isAtBottom = FigureLinifyer.isTouching(activeFigure, gameBoard);
+        activeFigure.update(level);
+        activeFigure.isAtBottom = FigureLinifyer.isTouchingDown(activeFigure, gameBoard);
+        try {
         if (activeFigure.isAtBottom){
+
+                gameBoard = FigureLinifyer.putFigureIntoBoard(activeFigure, gameBoard);
+
             gameBoard = FigureLinifyer.putFigureIntoBoard(activeFigure, gameBoard);
+            spawnFigure();
+        }
+        } catch (ArrayIndexOutOfBoundsException e) {
+            score.gameOver();
+            tetrisAchived.display("GAME OVER");
+            clearBoard();
             spawnFigure();
         }
        // figures.stream().filter(figure -> figure.isAtBottom).forEach(this::insertFigureIntoGameBoard);
@@ -58,7 +75,7 @@ public class GameWorld {
 
     private void removeCompleteLinesAndShiftDown() {
         int linesRemoved = 0;
-        boolean[][] tempBoard = new boolean[gameBoard[0].length][gameBoard.length];
+        boolean[][] tempBoard = new boolean[TOTAL_BLOCKS_Y][TOTAL_BLOCKS_Y];
         for (int i = 0; i < gameBoard.length; i++) {
             for (int j = 0; j < gameBoard[i].length; j++) {
                 tempBoard[j][i] = gameBoard[i][j];
@@ -90,9 +107,10 @@ public class GameWorld {
         }
         if(linesRemoved > 0) {
             lineClearSound.play();
-            if(linesRemoved==4) tetrisAchived.display();
+            if(linesRemoved==4) tetrisAchived.display("TETRIS!");
             score.increaseScoreWithLinesRemoved(linesRemoved);
         }
+        if (TEST_MODE) printGameBoard();
     }
 
 
@@ -116,12 +134,13 @@ public class GameWorld {
         return true;
     }
     private boolean isTrueRow(boolean[] tempRow) {
+        int count = 0;
         for (int i = 0; i < tempRow.length; i++) {
-            if (!tempRow[i]) {
-                return false;
+            if (tempRow[i]) {
+                count++;
             }
         }
-        return true;
+        return 20 == count;
     }
 
 
@@ -141,10 +160,14 @@ public class GameWorld {
             }
         }
         score.draw(spriteBatch);
+        upNext.draw(spriteBatch, shapeRenderer);
+        tetrisAchived.draw(spriteBatch);
     }
 
     private void spawnFigure(){
-        activeFigure = new Figure(FigureType.getRandom(), 200, 800, Color.WHITE, gameBoard);
+        activeFigure = new Figure(nextFigure, nextFigure.equals(FigureType.I) ? (SCREEN_WIDTH/2)-(4*BLOCK_SIZE):(SCREEN_WIDTH/2)-(3*BLOCK_SIZE), TOTAL_BLOCKS_Y*BLOCK_SIZE+BLOCK_SIZE, Color.WHITE, gameBoard);
+        nextFigure = FigureType.getRandom();
+        upNext.update(nextFigure);
     }
 
     private void clearBoard(){
@@ -170,5 +193,13 @@ public class GameWorld {
         spriteBatch.dispose();
         backgroundMusic.dispose();
         lineClearSound.dispose();
+    }
+    private void printGameBoard(){
+        for (int i = 0; i < gameBoard.length; i++) {
+            for (int j = 0; j < gameBoard[i].length; j++) {
+                System.out.print(gameBoard[i][j] ? "Q" : "_");
+            }
+            System.out.println();
+        }
     }
 }

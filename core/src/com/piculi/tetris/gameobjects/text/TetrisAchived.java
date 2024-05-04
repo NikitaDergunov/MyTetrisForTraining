@@ -20,7 +20,8 @@ public class TetrisAchived {
         font = new BitmapFont();
         font.setColor(color);
     }
-    public void display() {
+    public void display(String text) {
+        this.text = text;
         isDisplayed = true;
         displayTime = System.currentTimeMillis();
     }

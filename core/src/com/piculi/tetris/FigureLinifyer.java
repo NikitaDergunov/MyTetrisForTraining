@@ -1,7 +1,6 @@
 package com.piculi.tetris;
 
 import com.piculi.tetris.gameobjects.Figure;
-import com.piculi.tetris.gameobjects.Line;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,12 +8,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.piculi.tetris.constants.GameConstants.BLOCK_SIZE;
-import static com.piculi.tetris.constants.GameConstants.SCREEN_HEIGHT;
 import static com.piculi.tetris.constants.GameConstants.TOTAL_BLOCKS_Y;
 import static com.piculi.tetris.constants.GameConstants.X_MARGIN;
 
 public class FigureLinifyer {
-    public static boolean[][] putFigureIntoBoard(Figure figure, boolean[][] gameBoard){
+    public static boolean[][] putFigureIntoBoard(Figure figure, boolean[][] gameBoard) throws ArrayIndexOutOfBoundsException{
         boolean[][] newGameBord = Arrays.copyOf(gameBoard, gameBoard.length);
         Coordinates leftBottom = getAbsoluteCoordinates(figure);
         int leftBottomX = leftBottom.x;
@@ -56,18 +54,42 @@ public class FigureLinifyer {
         return new Coordinates(x, y);
     }
 
-    public static boolean isTouching(Figure activeFigure, boolean[][] gameBoard) {
+    public static boolean isTouchingDown(Figure activeFigure, boolean[][] gameBoard) {
         List<Coordinates> shapeBlockCoordinates = getCoordinatesForTouch(activeFigure, activeFigure.x, activeFigure.y);
         for (Coordinates c: shapeBlockCoordinates){
-            if(isTouchingForCoordinates(c, gameBoard)) return true;
+            if(isTouchingForCoordinatesDown(c, gameBoard)) return true;
         }
         return false;
     }
 
-    public static boolean isTouchingForCoordinates(Coordinates c, boolean[][] gameBoard) {
+    public static boolean isTouchingForCoordinatesDown(Coordinates c, boolean[][] gameBoard) {
         if (c.y-3 <= 0) return true;
-        if (c.y>SCREEN_HEIGHT-TOTAL_BLOCKS_Y*BLOCK_SIZE) return false;
+        if (c.y>TOTAL_BLOCKS_Y*BLOCK_SIZE) return false;
         return gameBoard[(c.x-X_MARGIN)/BLOCK_SIZE][Math.max(c.y/BLOCK_SIZE-1,0)];
+    }
+    public static boolean isTouchingLeft(Figure activeFigure, boolean[][] gameBoard) {
+        List<Coordinates> shapeBlockCoordinates = getCoordinatesForTouch(activeFigure, activeFigure.x, activeFigure.y);
+        for (Coordinates c: shapeBlockCoordinates){
+            if(isTouchingForCoordinatesLeft(c, gameBoard)) return true;
+        }
+        return false;
+    }
+    public static boolean isTouchingRight(Figure activeFigure, boolean[][] gameBoard) {
+        List<Coordinates> shapeBlockCoordinates = getCoordinatesForTouch(activeFigure, activeFigure.x, activeFigure.y);
+        for (Coordinates c: shapeBlockCoordinates){
+            if(isTouchingForCoordinatesRight(c, gameBoard)) return true;
+        }
+        return false;
+    }
+    public static boolean isTouchingForCoordinatesLeft(Coordinates c, boolean[][] gameBoard) {
+        if (c.x-3 <= X_MARGIN) return true;
+        if (c.y>TOTAL_BLOCKS_Y*BLOCK_SIZE) return false;
+        return gameBoard[(c.x-X_MARGIN)/BLOCK_SIZE-1][c.y/BLOCK_SIZE];
+    }
+    public static boolean isTouchingForCoordinatesRight(Coordinates c, boolean[][] gameBoard) {
+        if (c.x+3 >= X_MARGIN+TOTAL_BLOCKS_Y*BLOCK_SIZE) return true;
+        if (c.y>TOTAL_BLOCKS_Y*BLOCK_SIZE) return false;
+        return gameBoard[(c.x-X_MARGIN)/BLOCK_SIZE+1][c.y/BLOCK_SIZE];
     }
 
     public static class Coordinates{
