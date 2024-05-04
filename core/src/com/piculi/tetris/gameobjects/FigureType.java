@@ -21,11 +21,16 @@ public enum FigureType {
             {true, true, false},
             {false, true, true}
     }),
+    S(new boolean[][]{
+            {false, false, false},
+            {false, true, true},
+            {true, true, false}
+    }),
     L(new boolean[][]{
             {true, false, false},
             {true, false, false},
             {true, true, false}
-    }),;
+    });
     boolean[][] shape;
     FigureType(boolean[][] shape) {
         this.shape = shape;

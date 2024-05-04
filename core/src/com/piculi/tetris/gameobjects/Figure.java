@@ -6,11 +6,15 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
+import com.piculi.tetris.FigureLinifyer;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static com.piculi.tetris.constants.GameConstants.BLOCK_SIZE;
 import static com.piculi.tetris.constants.GameConstants.SCREEN_WIDTH;
+import static com.piculi.tetris.constants.GameConstants.TEST_MODE;
+import static com.piculi.tetris.constants.GameConstants.TOTAL_BLOCKS_X;
 import static com.piculi.tetris.constants.GameConstants.X_MARGIN;
 
 public class Figure {
@@ -27,8 +31,10 @@ public class Figure {
     private FigureType figureType;
     //test
     public boolean isAtBottom = false;
+    private boolean[][] gameBoard;
 
-    public Figure(FigureType figureType, int x, int y, Color color) {
+    public Figure(FigureType figureType, int x, int y, Color color, boolean[][] gameBoard) {
+        this.gameBoard = gameBoard;
         this.figureType = figureType;
         fillShapeArray(figureType);
         blocks = new Rectangle[shape.length][shape[0].length];
@@ -39,20 +45,21 @@ public class Figure {
         this.y = y;
         this.color = color;
         //GOVNOCODE:
-        //rotate();
+        rotate();
+        rotate();
     }
     public void update(){
         if(isAtBottom) return;
         if(Gdx.input.isKeyJustPressed(Input.Keys.LEFT)){
-            if(x<=X_MARGIN-1){
-                x=X_MARGIN;
-            }else {
+
                 x -= BLOCK_SIZE;
+            if(x<=X_MARGIN-1) {
+                x = X_MARGIN;
             }
         }
         if(Gdx.input.isKeyJustPressed(Input.Keys.RIGHT)){
             if(getYofTherightmostBlock()+BLOCK_SIZE>=SCREEN_WIDTH-X_MARGIN){
-                x = SCREEN_WIDTH - X_MARGIN - getShapeWidthInPixels();
+                x = SCREEN_WIDTH - X_MARGIN -BLOCK_SIZE - getShapeWidthInPixels();
 
             }else {
             x += BLOCK_SIZE;
@@ -63,16 +70,28 @@ public class Figure {
         }
         if(Gdx.input.isKeyJustPressed(Input.Keys.UP) ){
             rotate();
+            moveFigureBackInBoundsAfterRotation();
         }
-        if(y<=100){
-            isAtBottom = true;
-        }else {
             y-=normalSpeed;
-        }
     }
+
     public void draw(ShapeRenderer shapeRenderer){
-        shapeRenderer.setColor(color);
         shapeRenderer.begin();
+        if(TEST_MODE){
+            List<FigureLinifyer.Coordinates> shapeBlockCoordinates = FigureLinifyer.getCoordinatesForTouch(this, x, y);
+            shapeBlockCoordinates.forEach(c->{
+                Color color2;
+                if (FigureLinifyer.isTouchingForCoordinates(c, gameBoard)){
+                    color2 = Color.RED;
+                }else {
+                    color2 = Color.GREEN;
+                }
+                shapeRenderer.setColor(color2);
+                shapeRenderer.rect(c.x, c.y-blockSize, blockSize, blockSize);
+
+            });
+        }
+        shapeRenderer.setColor(color);
         for (int i=0;i<shape.length;i++){
             for(int j=0;j<shape[0].length;j++){
                 blocks[i][j].setX(x + i * blockSize);
@@ -83,17 +102,15 @@ public class Figure {
                     widthOfBlock = blockSize;
                     heightOfBlock = blockSize;
 
-                }else {
-                    widthOfBlock = 0;
-                    heightOfBlock = 0;
+                }else if(TEST_MODE) {
+                    widthOfBlock = 1;
+                    heightOfBlock = 1;
                 }
                 shapeRenderer.rect(blocks[i][j].getX(), blocks[i][j].getY(), widthOfBlock, heightOfBlock);
             }
         }
+
         shapeRenderer.end();
-    }
-    public boolean checkCollision(Line line){
-        return true;
     }
 
     private void fillShapeArray(FigureType figureType) {
@@ -134,9 +151,9 @@ public class Figure {
                 reversed = rollArrayLeftAndDown(reversed);
         }
         shape = reversed;
-        printArrayToConsole(reversed);
     }
-    private int getYofTherightmostBlock(){
+
+    public int getYofTherightmostBlock(){
         int index = 0;
         for (int i=0;i<shape.length;i++){
             for(int j=0;j<shape[0].length;j++){
@@ -148,7 +165,7 @@ public class Figure {
 
         return x + index * blockSize;
     }
-    private int getShapeWidthInPixels(){
+    public int getShapeWidthInPixels(){
         int width = 0;
         for (int i=0;i<shape.length;i++){
             for(int j=0;j<shape[0].length;j++){
@@ -215,6 +232,17 @@ public class Figure {
         }
         for (int i = 0; i < newArray.length; i++) {
             System.out.println(Arrays.toString(newArray[i]));
+        }
+    }
+
+    private void moveFigureBackInBoundsAfterRotation(){
+        List<FigureLinifyer.Coordinates> shapeBlockCoordinates = FigureLinifyer.getCoordinatesForTouch(this, x, y);
+        int border = X_MARGIN+TOTAL_BLOCKS_X*BLOCK_SIZE;
+        if (shapeBlockCoordinates.stream().anyMatch(c->c.x+1>border)){
+            x=x-BLOCK_SIZE;
+        }
+        if (shapeBlockCoordinates.stream().anyMatch(c->c.x-1<X_MARGIN)){
+            x=X_MARGIN;
         }
     }
 

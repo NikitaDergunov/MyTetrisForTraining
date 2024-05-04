@@ -30,19 +30,76 @@ public class GameWorld {
     }
 
     public void update() {
-        clearBoard();
+        removeCompleteLinesAndShiftDown();
         activeFigure.update();
-        for (Line line : lines) {
-            line.update();
-           // insertLineIntoGameBoard(line);
-        }
+        activeFigure.isAtBottom = FigureLinifyer.isTouching(activeFigure, gameBoard);
         if (activeFigure.isAtBottom){
-            lines.addAll(FigureLinifyer.makeLinesFromFigure(activeFigure));
+            gameBoard = FigureLinifyer.putFigureIntoBoard(activeFigure, gameBoard);
             spawnFigure();
         }
        // figures.stream().filter(figure -> figure.isAtBottom).forEach(this::insertFigureIntoGameBoard);
     }
 
+    private void removeCompleteLinesAndShiftDown() {
+        boolean[][] tempBoard = new boolean[gameBoard[0].length][gameBoard.length];
+        for (int i = 0; i < gameBoard.length; i++) {
+            for (int j = 0; j < gameBoard[i].length; j++) {
+                tempBoard[j][i] = gameBoard[i][j];
+            }
+        }
+        if (isBoardEmpty()) {
+            return;
+        }
+        for (int y = 0; y < tempBoard[0].length; y++) {
+            if (isTrueRow(tempBoard[y])) {
+               tempBoard[y] = new boolean[tempBoard[y].length];
+            }
+        }
+        for (int y = 0; y < tempBoard[0].length; y++) {
+            if (isFalseRow(tempBoard[y])) {
+                for (int i = y; i < tempBoard[0].length; i++) {
+                    if(i == tempBoard[0].length - 1) {
+                        tempBoard[i] = new boolean[tempBoard[i].length];
+                    } else
+                    tempBoard[i] = tempBoard[i + 1];}
+                }
+                tempBoard[tempBoard[0].length - 1] = new boolean[tempBoard[0].length];
+            }
+        for (int i = 0; i < gameBoard.length; i++) {
+            for (int j = 0; j < gameBoard[i].length; j++) {
+                gameBoard[i][j] = tempBoard[j][i];
+            }
+        }
+    }
+
+
+    private boolean isBoardEmpty() {
+        for (int i = 0; i < gameBoard.length; i++) {
+            for (int j = 0; j < gameBoard[i].length; j++) {
+                if (gameBoard[i][j]) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private boolean isFalseRow(boolean[] tempRow) {
+        for (int i = 0; i < tempRow.length; i++) {
+            if (tempRow[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+    private boolean isTrueRow(boolean[] tempRow) {
+        for (int i = 0; i < tempRow.length; i++) {
+            if (!tempRow[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
 
 
     public void draw(){
@@ -50,44 +107,24 @@ public class GameWorld {
         drawGrid();
         camera.update();
         activeFigure.draw(shapeRenderer);
-        for (Line line : lines) {
-            line.draw(shapeRenderer);
+        for (int x = 0; x < gameBoard.length; x++) {
+            for (int y = 0; y < gameBoard[x].length; y++) {
+                if (gameBoard[x][y]) {
+                    shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+                    shapeRenderer.setColor(Color.WHITE);
+                    shapeRenderer.rect(50 + x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+                    shapeRenderer.end();
+                }
+            }
         }
 
 
     }
 
     private void spawnFigure(){
-        //figures.add(new Figure(FigureType.getRandom(), 50, 800, Color.WHITE));
-        activeFigure = new Figure(FigureType.getRandom(), 50, 800, Color.WHITE);
-        //lines.add(new Line(50, 0));
+        activeFigure = new Figure(FigureType.getRandom(), 200, 800, Color.WHITE, gameBoard);
     }
-    private void insertFigureIntoGameBoard(Figure figure){
-       for(int i = 0; i<figure.shape.length; i++){
-           for(int j = 0; j<figure.shape[i].length; j++){
-               if(figure.shape[i][j]){
-                   gameBoard[getDescreteX(figure.x)+i][getDescreteY(figure.y)-j] = true;
-               }
-           }
-       }
 
-    }
-    private void insertLineIntoGameBoard(Line line){
-        int x = getDescreteX(line.x);
-        int y = getDescreteY(line.y);
-        boolean[] shape = line.shape;
-        for (int i = 0; i < shape.length; i++) {
-            if (shape[i]) {
-                gameBoard[x + i][y] = true;
-            }
-        }
-    }
-    private int getDescreteX(int x){
-        return ((x+X_MARGIN)/TOTAL_BLOCKS_X)-1;
-    }
-    private int getDescreteY(int y){
-        return y/TOTAL_BLOCKS_Y;
-    }
     private void clearBoard(){
         for (int i = 0; i < gameBoard.length; i++) {
             for (int j = 0; j < gameBoard[i].length; j++) {
