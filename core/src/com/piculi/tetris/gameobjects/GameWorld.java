@@ -4,8 +4,10 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.piculi.tetris.FigureLinifyer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static com.piculi.tetris.constants.GameConstants.BLOCK_SIZE;
@@ -17,6 +19,7 @@ public class GameWorld {
     ShapeRenderer shapeRenderer;
     OrthographicCamera camera;
     private boolean[][] gameBoard = new boolean[TOTAL_BLOCKS_X][TOTAL_BLOCKS_Y];
+    private Figure activeFigure;
     List<Figure> figures = new ArrayList<>();
     List<Line> lines = new ArrayList<>();
     public GameWorld(){
@@ -28,35 +31,36 @@ public class GameWorld {
 
     public void update() {
         clearBoard();
-        for (Figure figure : figures) {
-            figure.update();
-           // insertFigureIntoGameBoard(figure);
-        }
+        activeFigure.update();
         for (Line line : lines) {
             line.update();
            // insertLineIntoGameBoard(line);
         }
-        if (figures.get(figures.size()-1).isAtBottom){
+        if (activeFigure.isAtBottom){
+            lines.addAll(FigureLinifyer.makeLinesFromFigure(activeFigure));
             spawnFigure();
         }
        // figures.stream().filter(figure -> figure.isAtBottom).forEach(this::insertFigureIntoGameBoard);
     }
+
+
+
     public void draw(){
         ScreenUtils.clear(Color.GRAY);
         drawGrid();
         camera.update();
-        for (Figure figure : figures) {
-            figure.draw(shapeRenderer);
-        }
+        activeFigure.draw(shapeRenderer);
         for (Line line : lines) {
             line.draw(shapeRenderer);
         }
 
 
     }
+
     private void spawnFigure(){
-        figures.add(new Figure(FigureType.getRandom(), 50, 800, Color.WHITE));
-        lines.add(new Line(50, 0));
+        //figures.add(new Figure(FigureType.getRandom(), 50, 800, Color.WHITE));
+        activeFigure = new Figure(FigureType.getRandom(), 50, 800, Color.WHITE);
+        //lines.add(new Line(50, 0));
     }
     private void insertFigureIntoGameBoard(Figure figure){
        for(int i = 0; i<figure.shape.length; i++){

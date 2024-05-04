@@ -37,5 +37,11 @@ public class Line {
     public void update() {
 
     }
+    public void printLine() {
+        for (int i = 0; i < shape.length; i++) {
+            System.out.print(shape[i] ? "Q" : "_");
+        }
+        System.out.println();
+    }
 
 }

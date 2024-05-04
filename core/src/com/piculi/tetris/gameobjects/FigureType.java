@@ -8,28 +8,23 @@ public enum FigureType {
             {true, true, true, true}
     }),
     SQUARE(new boolean[][]{
-            {false, false, false, false},
-            {false, false, false, false},
-            {true, true, false, false},
-            {true, true, false, false}
+            {true, true },
+            {true, true}
     }),
     T(new boolean[][]{
-            {false, false, false, false},
-            {false, false, false, false},
-            {true, true, true, false},
-            {false, true, false, false}
+            {false, false, false},
+            {true, true, true},
+            {false, true, false}
     }),
     Z(new boolean[][]{
-            {false, false, false, false},
-            {false, false, false, false},
-            {true, true, false, false},
-            {false, true, true, false}
+            {false, false, false},
+            {true, true, false},
+            {false, true, true}
     }),
     L(new boolean[][]{
-            {false, false, false, false},
-            {true, false, false, false},
-            {true, false, false, false},
-            {true, true, false, false}
+            {true, false, false},
+            {true, false, false},
+            {true, true, false}
     }),;
     boolean[][] shape;
     FigureType(boolean[][] shape) {

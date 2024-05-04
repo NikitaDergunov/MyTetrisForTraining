@@ -17,8 +17,8 @@ public class Figure {
     private static  int normalSpeed = 2;
     private static  int fastSpeed = normalSpeed*2;
     private static final int blockSize = BLOCK_SIZE;
-    public boolean[][] shape = new boolean[4][4];
-    private Rectangle[][] blocks = new Rectangle[4][4];
+    public boolean[][] shape;
+    private Rectangle[][] blocks;
     private int xSpeed;
     private int ySpeed;
     public int x;
@@ -31,12 +31,15 @@ public class Figure {
     public Figure(FigureType figureType, int x, int y, Color color) {
         this.figureType = figureType;
         fillShapeArray(figureType);
+        blocks = new Rectangle[shape.length][shape[0].length];
         createBlocks();
         this.xSpeed = normalSpeed;
         this.ySpeed = normalSpeed;
         this.x = x;
         this.y = y;
         this.color = color;
+        //GOVNOCODE:
+        //rotate();
     }
     public void update(){
         if(isAtBottom) return;
@@ -61,7 +64,7 @@ public class Figure {
         if(Gdx.input.isKeyJustPressed(Input.Keys.UP) ){
             rotate();
         }
-        if(y<=0){
+        if(y<=100){
             isAtBottom = true;
         }else {
             y-=normalSpeed;
@@ -70,8 +73,8 @@ public class Figure {
     public void draw(ShapeRenderer shapeRenderer){
         shapeRenderer.setColor(color);
         shapeRenderer.begin();
-        for (int i=0;i<4;i++){
-            for(int j=0;j<4;j++){
+        for (int i=0;i<shape.length;i++){
+            for(int j=0;j<shape[0].length;j++){
                 blocks[i][j].setX(x + i * blockSize);
                 blocks[i][j].setY(y + j * blockSize);
                 int widthOfBlock;
@@ -89,13 +92,16 @@ public class Figure {
         }
         shapeRenderer.end();
     }
+    public boolean checkCollision(Line line){
+        return true;
+    }
 
     private void fillShapeArray(FigureType figureType) {
         this.shape = Arrays.copyOf(figureType.getShape(), figureType.getShape().length);
     }
     private void createBlocks(){
-        for(int i = 0; i < 4; i++){
-            for(int j = 0; j < 4; j++){
+        for (int i=0;i<shape.length;i++){
+            for(int j=0;j<shape[0].length;j++){
                 Rectangle block;
                 if(shape[i][j]){
                     block = new Rectangle(x + i * 16, y + j * 16, 16, 16);
@@ -107,31 +113,33 @@ public class Figure {
             }
         }
     }
-    private void rotate(){
+    public void rotate(){
 
-        boolean[][] transposed = new boolean[4][4];
-        boolean[][] reversed = new boolean[4][4];
+        boolean[][] transposed = new boolean[shape.length][shape[0].length];
+        boolean[][] reversed = new boolean[shape.length][shape[0].length];
 
-        for(int i = 0; i < 4; i++){
-            for(int j = 0; j < 4; j++){
+        for (int i=0;i<shape.length;i++){
+            for(int j=0;j<shape[0].length;j++){
                 transposed[i][j] = shape[j][i];
             }
         }
-        for (int i = 0; i < 4; i++){
-            for (int j = 0; j < 4; j++){
-                reversed[i][j] = transposed[i][3-j];
+        int rows = shape.length;
+        int cols = shape[0].length;
+        for (int i=0;i<shape.length;i++){
+            for(int j=0;j<shape[0].length;j++){
+                reversed[i][j] = transposed[i][cols-1-j];
             }
         }
         while (isColumnFalse(reversed, 0)||isRowFalse(reversed, 0)){
                 reversed = rollArrayLeftAndDown(reversed);
         }
-        printArrayToConsole(reversed);
         shape = reversed;
+        printArrayToConsole(reversed);
     }
     private int getYofTherightmostBlock(){
         int index = 0;
-        for (int i = 0; i < 4; i++){
-            for (int j = 0; j < 4; j++){
+        for (int i=0;i<shape.length;i++){
+            for(int j=0;j<shape[0].length;j++){
                 if(shape[i][j]){
                     index = Math.max(index, i);
                 }
@@ -142,8 +150,8 @@ public class Figure {
     }
     private int getShapeWidthInPixels(){
         int width = 0;
-        for (int i = 0; i < 4; i++){
-            for (int j = 0; j < 4; j++){
+        for (int i=0;i<shape.length;i++){
+            for(int j=0;j<shape[0].length;j++){
                 if(shape[i][j]){
                     width = Math.max(width, i);
                 }
@@ -151,7 +159,7 @@ public class Figure {
         }
         return width * blockSize;
     }
-    public boolean[][] rollArrayLeftAndDown(boolean[][] array) {
+    private boolean[][] rollArrayLeftAndDown(boolean[][] array) {
         int rows = array.length;
         int cols = array[0].length;
         boolean[][] newArray = new boolean[rows][cols];
@@ -164,20 +172,20 @@ public class Figure {
             }
         }
 
-        // Roll down
-        if (isRowFalse(newArray, 0)) {
+        // Roll up
+        if (isRowFalse(array, rows - 1)) {
             for (int i = 0; i < cols; i++) {
-                for (int j = 0; j < rows - 1; j++) {
-                    newArray[j][i] = newArray[j + 1][i];
+                for (int j = rows - 1; j > 0; j--) {
+                    newArray[j][i] = newArray[j - 1][i];
                 }
-                newArray[rows - 1][i] = false;
+                newArray[0][i] = false;
             }
         }
 
         return newArray;
     }
 
-    public boolean isColumnFalse(boolean[][] array, int colIndex) {
+    private boolean isColumnFalse(boolean[][] array, int colIndex) {
         for (boolean[] booleans : array) {
             if (booleans[colIndex]) {
                 return false;
@@ -186,7 +194,7 @@ public class Figure {
         return true;
     }
 
-    public boolean isRowFalse(boolean[][] array, int rowIndex) {
+    private boolean isRowFalse(boolean[][] array, int rowIndex) {
         for (boolean b : array[rowIndex]) {
             if (b) {
                 return false;
