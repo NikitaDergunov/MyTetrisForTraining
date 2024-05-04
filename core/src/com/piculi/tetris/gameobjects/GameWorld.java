@@ -20,6 +20,7 @@ import static com.piculi.tetris.constants.GameConstants.SCREEN_WIDTH;
 import static com.piculi.tetris.constants.GameConstants.TEST_MODE;
 import static com.piculi.tetris.constants.GameConstants.TOTAL_BLOCKS_X;
 import static com.piculi.tetris.constants.GameConstants.TOTAL_BLOCKS_Y;
+import static com.piculi.tetris.constants.GameConstants.X_MARGIN;
 
 public class GameWorld {
     SpriteBatch spriteBatch;
@@ -182,7 +183,7 @@ public class GameWorld {
         shapeRenderer.setColor(Color.BLACK);
         for (int i = 0; i < TOTAL_BLOCKS_X; i++) {
             for (int j = 0; j < TOTAL_BLOCKS_Y; j++) {
-                shapeRenderer.rect(50 + (i * BLOCK_SIZE), j * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+                shapeRenderer.rect(X_MARGIN + (i * BLOCK_SIZE), j * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
             }
         }
         shapeRenderer.end();

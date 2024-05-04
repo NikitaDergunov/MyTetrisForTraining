@@ -44,18 +44,16 @@ public class Figure {
         this.x = x;
         this.y = y;
         this.color = color;
+        rotate();
     }
     public void update(int level){
         this.level = level;
         if(isAtBottom) return;
         if(Gdx.input.isKeyJustPressed(Input.Keys.LEFT)){
             x -= BLOCK_SIZE;
-            if(x<=X_MARGIN-1) {
+            if(x<X_MARGIN) {
                 x = X_MARGIN;
             }
-            //if (FigureLinifyer.isTouchingLeft(this, gameBoard)){
-            //    x += BLOCK_SIZE;
-            //}
         }
         if(Gdx.input.isKeyJustPressed(Input.Keys.RIGHT)){
             if(getYofTherightmostBlock()+BLOCK_SIZE>=SCREEN_WIDTH-X_MARGIN){
@@ -64,9 +62,6 @@ public class Figure {
             }else {
             x += BLOCK_SIZE;
             }
-            //if (FigureLinifyer.isTouchingRight(this, gameBoard)){
-            //    x -= BLOCK_SIZE;
-            //}
         }
         if(Gdx.input.isKeyPressed(Input.Keys.DOWN)){
             y -= BLOCK_SIZE;
