@@ -1,31 +1,47 @@
 package com.piculi.tetris.gameobjects;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.piculi.tetris.FigureLinifyer;
+import com.piculi.tetris.gameobjects.text.Score;
+import com.piculi.tetris.gameobjects.text.TetrisAchived;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static com.piculi.tetris.constants.GameConstants.BLOCK_SIZE;
 import static com.piculi.tetris.constants.GameConstants.TOTAL_BLOCKS_X;
 import static com.piculi.tetris.constants.GameConstants.TOTAL_BLOCKS_Y;
-import static com.piculi.tetris.constants.GameConstants.X_MARGIN;
 
 public class GameWorld {
+    SpriteBatch spriteBatch;
     ShapeRenderer shapeRenderer;
     OrthographicCamera camera;
     private boolean[][] gameBoard = new boolean[TOTAL_BLOCKS_X][TOTAL_BLOCKS_Y];
     private Figure activeFigure;
+    private Score score;
+    TetrisAchived tetrisAchived;
+    Sound lineClearSound;
+    Music backgroundMusic;
     List<Figure> figures = new ArrayList<>();
     List<Line> lines = new ArrayList<>();
     public GameWorld(){
+        this.spriteBatch = new SpriteBatch();
         this.shapeRenderer = new ShapeRenderer();
         this.camera = new OrthographicCamera();
+        backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("sounds/Tetris.mp3"));
+        backgroundMusic.setLooping(true);
+        backgroundMusic.play();
+        lineClearSound = Gdx.audio.newSound(Gdx.files.internal("sounds/lineclear.mp3"));
         shapeRenderer.setAutoShapeType(true);
+        this.score = new Score(10,700,Color.BLACK);
+        this.tetrisAchived = new TetrisAchived(150, 600, Color.PURPLE);
         spawnFigure();
     }
 
@@ -41,6 +57,7 @@ public class GameWorld {
     }
 
     private void removeCompleteLinesAndShiftDown() {
+        int linesRemoved = 0;
         boolean[][] tempBoard = new boolean[gameBoard[0].length][gameBoard.length];
         for (int i = 0; i < gameBoard.length; i++) {
             for (int j = 0; j < gameBoard[i].length; j++) {
@@ -53,6 +70,7 @@ public class GameWorld {
         for (int y = 0; y < tempBoard[0].length; y++) {
             if (isTrueRow(tempBoard[y])) {
                tempBoard[y] = new boolean[tempBoard[y].length];
+                linesRemoved++;
             }
         }
         for (int y = 0; y < tempBoard[0].length; y++) {
@@ -69,6 +87,11 @@ public class GameWorld {
             for (int j = 0; j < gameBoard[i].length; j++) {
                 gameBoard[i][j] = tempBoard[j][i];
             }
+        }
+        if(linesRemoved > 0) {
+            lineClearSound.play();
+            if(linesRemoved==4) tetrisAchived.display();
+            score.increaseScoreWithLinesRemoved(linesRemoved);
         }
     }
 
@@ -117,8 +140,7 @@ public class GameWorld {
                 }
             }
         }
-
-
+        score.draw(spriteBatch);
     }
 
     private void spawnFigure(){
@@ -145,5 +167,8 @@ public class GameWorld {
 
     public void dispose() {
         shapeRenderer.dispose();
+        spriteBatch.dispose();
+        backgroundMusic.dispose();
+        lineClearSound.dispose();
     }
 }
